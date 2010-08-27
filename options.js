@@ -25,12 +25,13 @@
 //------------------------------------------------------------------------------
 
 /**
- * @public Minimalistic utilities for tokenizing command line arguments
- * according to POSIX conventions with support for GNU-style long options. Each
- * command line argument in <code>process.argv</code> will be parsed in order
- * and classified as a key or a value (the first 2 elements, however, are
- * skipped because they will always be "node" and the name of the executed
- * JavaScript file; thus they are not user-specified options).
+ * @public Minimalistic utility for parsing typical Unix command line options
+ * following POSIX conventions, including support for GNU-style long options.
+ * Each command line argument in <code>process.argv</code> will be parsed in
+ * order and classified as a key or a value (the first 2 elements in
+ * <code>process.argv</code> will be skipped because they will always be "node"
+ * and the name of the executed JavaScript file; thus they are not
+ * user-specified options).
  * <ul>
  *   <li>Command line arguments are keys if they begin with a single or double
  *   hyphen delimiter ("-" or "--").</li>
@@ -154,20 +155,20 @@ Options.IO = "{\b\0IO}\b";
 var _args = process.argv.slice(2);
 
 /**
- * @private {Boolean} Flag indicating that the command expects some arguments
- * to be keys, which is <code>true</code> by default; and <code>false</code>
- * following a double-hyphen token ("--").
+ * @private @type {Boolean} Flag indicating that the command expects some
+ * arguments to be keys, which is <code>true</code> by default; and
+ * <code>false</code> following a double-hyphen token ("--").
  */
 var _expectingKeys = true;
 
 /**
- * @private {Boolean} Flag indicating that the command may expect I/O from
- * STDIN or STDOUT following a single-hyphen token ("-").
+ * @private @type {Boolean} Flag indicating that the command may expect I/O
+ * from STDIN or STDOUT following a single-hyphen token ("-").
  */
 var _expectingIo = false;
 
 /**
- * @private {Boolean} Flag indicating that multiple characters follow a
+ * @private @type {Boolean} Flag indicating that multiple characters follow a
  * single-hyphen delimiter.
  */
 var _inBundle = false;
@@ -193,6 +194,10 @@ var _inBundle = false;
  * @see #getValue
  */
 Options.next = function (callback) {
+  if (_args.length < 1) {
+    return false;
+  }
+  
   var n = _next();
   var t = null;
   
@@ -280,8 +285,8 @@ function _next() {
  * @public Parse the next value from the command line (which is useful if the
  * last token was a key that accepts or requires a value).
  *
- * @return {String|null} The next command line argument&mdash;if one is available
- * and it is not a key; <code>null</code> otherwise.
+ * @return {String|null} The next command line argument&mdash;if one is
+ * available and it is not a key; <code>null</code> otherwise.
  */
 Options.getValue = function () {
   if (_args.length == 0 || (!_inBundle && _args[0].indexOf('-') == 0)) {
