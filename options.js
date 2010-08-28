@@ -37,9 +37,9 @@
  *   hyphen delimiter ("-" or "--").</li>
  * 
  *   <li>Keys that follow a single-hyphen delimiter must themselves be a single
- *   character each. Keys following a double hyphen are typically one to three
- *   words long, with each word separated from the preceeding one by a
- *   hyphen.</li>
+ *   character each. Keys following a double hyphen must be at least two
+ *   characters each and are typically one to three words long, with each word
+ *   separated from the preceeding one by a hyphen.</li>
  *
  *   <li>Multiple single-character keys may follow a single-hyphen delimiter.
  *   For example, "-key" is equivalent to "-k -e -y".</li>
@@ -86,7 +86,7 @@
  *         case 'e':          // -e
  *         case 'encrypt':    // --encrypt
  *           // Accept, but do not require, a specific cipher.
- *           var v = options.getValue();
+ *           var v = options.getOptional();
  *
  *           if (v != null) {
  *             if (v == 'AES' || v == 'Blowfish' || v == 'DSA' || v == 'RSA') {
@@ -169,9 +169,24 @@ var _expectingIo = false;
 
 /**
  * @private @type {Boolean} Flag indicating that multiple characters follow a
- * single-hyphen delimiter.
+ * single-hyphen delimiter. Depending on the caller's expectations, a bundle
+ * may be a string of undelimited single-character keys (for example,
+ * <code>-key</code> as opposed to <code>-k -e -y</code>), a single-character
+ * key plus a corresponding value (for example, <code>-kvalue</code> as opposed
+ * to <code>-k value</code>), or both (for example, <code>-eykvalue</code>).
  */
 var _inBundle = false;
+
+/**
+ * @private @type {Boolean} Flag indicating that the previous token parsed was
+ * a key and that the next token is its corresponding value, which was declared
+ * unambiguously by using an equal sign ("=") to separate the key and value
+ * (for example, <code>--foo=bar</code> as opposed to <code>--foo bar</code>).
+ *
+ * @see #_inBundle
+ * @see #getOptional
+ */
+var _beforeOptional = false;
 
 //-------------------------------------------------------------------
 // Methods
@@ -190,6 +205,9 @@ var _inBundle = false;
  *
  * @throws {Error} If there are arguments on the command line following a
  * single-hyphen token ("-").
+ *
+ * @throws {Error} If there are single-character keys on the command line that
+ * follow a double-hyphen delimiter ("--").
  *
  * @see #getValue
  */
@@ -262,11 +280,16 @@ function _next() {
       o = o.substring(0, e);
 
       if (r != '') {
+        _beforeOptional = true;
         _args.unshift(r);
       }
     }
 
     if (o.indexOf('--') == 0) {
+      if (o.length < 4) {
+        throw Error("Expected a multi-character key to follow a double " + 
+            "hyphen ('--'), but found a single character key '" + o + "'.");
+      }
       return o.substr(2);
     } else if (o.length == 2) {
       _inBundle = false;
@@ -282,13 +305,15 @@ function _next() {
 }
 
 /**
- * @public Parse the next value from the command line (which is useful if the
- * last token was a key that accepts or requires a value).
+ * @public Parse the next value from the command line. <code>getValue</code> is
+ * useful if the previous token is a key that requires a value.
  *
  * @return {String|null} The next command line argument&mdash;if one is
  * available and it is not a key; <code>null</code> otherwise.
  */
 Options.getValue = function () {
+  _beforeOptional = false;
+  
   if (_args.length == 0 || (!_inBundle && _args[0].indexOf('-') == 0)) {
     return null;
   }
@@ -301,6 +326,26 @@ Options.getValue = function () {
   }
   
   return o;
+};
+
+/**
+ * @public Parse the next value from the command line if, and only if, it is
+ * part of a series of characters following a single-hyphen delimiter (for
+ * example <code>-kvalue</code>) or it is separated from the preceding token by
+ * an equal sign (for example, <code>--foo=bar</code>). <code>getOptional</code>
+ * is useful if the previous token is a key that accepts, but doesn't require,
+ * a value.
+ *
+ * @return {String|null} The next command line argument&mdash;if one is
+ * available and it is unambiguously attached to the preceding key;
+ * <code>null</code> otherwise.
+ */
+Options.getOptional = function() {
+  if (_beforeOptional || _inBundle) {
+    return Options.getValue();
+  }
+  
+  return null;
 };
 
 //------------------------------------------------------------------------------
@@ -319,7 +364,7 @@ Options.getValue = function () {
           case 'e':          // -e
           case 'encrypt':    // --encrypt
             // Accept, but do not require, a specific cipher.
-            var v = options.getValue();
+            var v = options.getOptional();
 
             if (v != null) {
               if (v == 'AES' || v == 'Blowfish' || v == 'DSA' || v == 'RSA') {
