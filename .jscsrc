@@ -1,0 +1,13 @@
+{
+  "disallowSpacesInAnonymousFunctionExpression": null,
+  "disallowSpacesInFunctionExpression": null,
+  "maximumLineLength": {
+    "value": 80,
+    "allExcept": [ "regex", "urlComments"]
+  },
+  "preset": "google",
+  "requireSpacesInAnonymousFunctionExpression": {
+    "beforeOpeningRoundBrace": true,
+    "beforeOpeningCurlyBrace": true
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "lib-node-options",
+  "version": "0.0.1",
+  "description": "Minimalistic utility for parsing typical Unix command line options following POSIX conventions, including support for GNU-style long options.",
+  "main": "options.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mikol/lib-node-options.git"
+  },
+  "keywords": [
+    "unix",
+    "command line",
+    "options parser"
+  ],
+  "author": "Mikol Graves <mikol@thinbox.org> (http://thinbox.org/~mikol)",
+  "license": "CC-BY-4.0",
+  "bugs": {
+    "url": "https://github.com/mikol/lib-node-options/issues"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "eqnull": true,
+  "esnext": true,
+  "globals": {
+    "console": true,
+    "exports": true,
+    "require": true,
+    "setTimeout": true
+  },
+  "globalstrict": false,
+  "unused": true
+}
